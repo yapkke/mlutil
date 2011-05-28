@@ -7,6 +7,11 @@ import yapc.log.output as output
 import yapc.comm.json as jsoncomm
 
 class mlserver(yapc.daemon):
+    """mlab server
+
+    @author ykk
+    @date May 2011
+    """
     def __init__(self):
         yapc.daemon.__init__(self)
         ##UNIX domain socket for JSON commands
@@ -25,7 +30,7 @@ class mlserver(yapc.daemon):
 def usage():
     """Display usage
     """
-    print "Usage "+sys.argv[0]+" [options] command <parameters>"
+    print "Usage "+sys.argv[0]+" [options]"
     print "\tm-lab server"
     print  "Options:"
     print "-h/--help\n\tPrint this usage guide"
