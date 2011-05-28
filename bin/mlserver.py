@@ -4,13 +4,21 @@ import sys
 import yapc.core as core
 import yapc.interface as yapc
 import yapc.log.output as output
+import yapc.comm.json as jsoncomm
 
 class mlserver(yapc.daemon):
     def __init__(self):
         yapc.daemon.__init__(self)
-        
+        ##UNIX domain socket for JSON commands
+        self.sock = "mls.sock"
+        ##Force bind JSON socket
+        self.forcejson = True
+
     def run(self):
         server = core.core()
+        jsonconn = jsoncommm.jsonserver(server, file=self.sock,
+                                        forcebind=self.forcejson)
+
         server.run()        
 
 ##Print usage guide
@@ -48,7 +56,7 @@ for opt,arg in opts:
     elif (opt in ("--very-verbose")):
         output.set_mode("VDBG")
     elif (opt in ("-d","--daemon")):
-        fs.daemon=True
+        mls.daemon=True
     else:
         print "Unhandled option :"+opt
         sys.exit(2)
