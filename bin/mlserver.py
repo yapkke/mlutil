@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 import getopt
 import sys
+
 import yapc.core as core
 import yapc.interface as yapc
 import yapc.log.output as output
 import yapc.comm.json as jsoncomm
+
+import mlutil.cache as mlcache
 
 class mlserver(yapc.daemon):
     """mlab server
@@ -21,9 +24,10 @@ class mlserver(yapc.daemon):
 
     def run(self):
         server = core.core()
-        jsonconn = jsoncommm.jsonserver(server, file=self.sock,
-                                        forcebind=self.forcejson)
+        jsonconn = jsoncomm.jsonserver(server, file=self.sock,
+                                       forcebind=self.forcejson)
 
+        config = mlcache.config(server)
         server.run()        
 
 ##Print usage guide
