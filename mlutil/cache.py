@@ -38,14 +38,36 @@ class config(yapc.cleanup):
             self.read_config()
         else:
             self.init_config()
+        ##Create path if not exist
+        self.check_path()
 
     def init_config(self):
         """Return initial default configuration
         """
         self.config = {}
-        self.config["data_path"] = "mlutil"
-        
+        self.config["path"] = "~/mlutil"
+        self.config["sock"] = "mls.sock"
+
         return self.config
+
+    def get_sock(self):
+        """Get socket
+        """
+        return self.get_path()+"/"+self.config["sock"]
+
+    def get_path(self):
+        """Get path
+        """
+        return os.path.expanduser(self.config["path"])
+
+    def check_path(self):
+        """Create path if not exist
+        """
+        p = self.get_path()
+        if (not os.path.exists(p)):
+            output.info("Creating path "+p,
+                        self.__class__.__name__)
+            os.makedirs(p)
 
     def cleanup(self):
         """Cleanup configuration

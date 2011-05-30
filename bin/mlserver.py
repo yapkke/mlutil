@@ -17,17 +17,15 @@ class mlserver(yapc.daemon):
     """
     def __init__(self):
         yapc.daemon.__init__(self)
-        ##UNIX domain socket for JSON commands
-        self.sock = "mls.sock"
         ##Force bind JSON socket
         self.forcejson = True
 
     def run(self):
         server = core.core()
-        jsonconn = jsoncomm.jsonserver(server, file=self.sock,
+        config = mlcache.config(server)
+        jsonconn = jsoncomm.jsonserver(server, file=config.get_sock(),
                                        forcebind=self.forcejson)
 
-        config = mlcache.config(server)
         server.run()        
 
 ##Print usage guide
@@ -46,9 +44,9 @@ mls = mlserver()
 
 #Parse options and arguments
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hvdp:",
-                               ["help","verbose","daemon", 
-                                "very-verbose", "port=", "flow-removed"])
+    opts, args = getopt.getopt(sys.argv[1:], "hvd",
+                               ["help","daemon", 
+                                "verbose","very-verbose"])
 except getopt.GetoptError:
     print "Option error!"
     usage()
