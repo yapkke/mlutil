@@ -11,7 +11,7 @@ import time
 GOOGLE_STORAGE = 'gs'
 MLAB_BUCKET = 'm-lab'
 
-class manager(yapc.component):
+class manager(yapc.component, yapc.cleanup):
     """Class to manage Google storage
 
     @author ykk
@@ -27,6 +27,7 @@ class manager(yapc.component):
         ##Reference to refresh task
         self.__refresh = refresh_manifest()
 
+        server.register_cleanup(self)
         server.register_event_handler(jsoncomm.message.name, self)
         
     def processevent(self, event):
@@ -64,6 +65,12 @@ class manager(yapc.component):
             event.reply(reply)
             
         return True
+
+    def cleanup(self):
+        """Cleanup process
+        """
+        if (self.__refresh.is_running()):
+            self.__refresh.stop()
 
 class refresh_manifest(yapc.async_task):
     """Async task to list all objects in Google storage
