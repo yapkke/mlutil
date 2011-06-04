@@ -16,6 +16,8 @@ m.add_file("glasnot/bak/testing 1234.tgz")
 m.add_file("glasnot/bak2/testing 1234.tgz")
 m.add_file("glasnot/testing 1234.tgz")
 
+for f in m.get_all_files():
+    output.dbg(str(f))
 output.dbg(str(m.files))
 output.dbg(str(m.get_files()))
 for name, d in m.get_dirs().items():

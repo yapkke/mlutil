@@ -3,10 +3,11 @@ import yapc.interface as yapc
 import yapc.log.output as output
 import yapc.comm.json as jsoncomm
 
+import mlutil.base as base
+
 from oauth2_plugin import oauth2_plugin
 import boto
 
-import copy
 import time
 
 GOOGLE_STORAGE = 'gs'
@@ -76,83 +77,23 @@ class manager(yapc.component, yapc.cleanup):
         if (self.__refresh.is_running()):
             self.__refresh.stop()
 
-class manifest(yapc.cleanup):
+class manifest(yapc.cleanup, base.manifest):
     """Google storage manifest
     
     @author ykk
     @date Jun 2011
     """
-    FILE="/FILES/"
     def __init__(self, server, config):
         """Initialize
 
         @param config local cache configuration
         """
+        base.manifest.__init__(self)
         ##Reference to configuration
         self.config = config
-        ##List of files
-        self.files = {}
 
         server.register_cleanup(self)
 
-    def get_files(self, root=None):
-        """Get files in a directory
-        
-        @return clone of list of files
-        """
-        cdir = root
-        if (cdir == None):
-            cdir = self.files
-        if (manifest.FILE in cdir):
-            return cdir[manifest.FILE][:]
-        else:
-            return []
-
-    def get_dir_names(self, root=None):
-        """Get names of subdirectories in a directory
-        
-        @return list of names
-        """
-        cdir = root
-        if (cdir == None):
-            cdir = self.files
-        names = []
-        for n,d in cdir.items():
-            if (n != manifest.FILE):
-                names.append(n)
-        return names
-
-    def get_dirs(self, root=None):
-        """Get subdirectories in a directory
-
-        @return clone of dictionary of directories
-        """
-        cdir = root
-        if (cdir == None):
-            cdir = self.files
-        dirs = copy.deepcopy(cdir)
-        if (manifest.FILE in dirs):
-            del dirs[manifest.FILE]
-        return dirs
-
-    def add_file(self, filename, root=None):
-        """Add file with name
-        """
-        cdir = root
-        if (cdir == None):
-            cdir = self.files
-
-        #Create/traverse directory
-        dir = filename.split("/")
-        for d in dir[:-1]:
-            if (d not in cdir):
-                cdir[d] = {}
-            cdir = cdir[d]
-
-        #Add file to directory
-        if (manifest.FILE not in cdir):
-            cdir[manifest.FILE] = []
-        cdir[manifest.FILE].append(dir[-1])
         
     def save_cache(self):
         """Save content of cache
