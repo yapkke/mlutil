@@ -65,7 +65,10 @@ class manager(yapc.component, yapc.cleanup):
                     while (self.__refresh.is_running()):
                         time.sleep(0.1)
                     reply["status"] = "stopped"
-            
+        
+            elif (event.message["command"] == "list-projects"):
+                reply["projects"] = self.manifest.get_projects()
+    
             #Send reply
             event.reply(reply)
             
@@ -94,6 +97,13 @@ class manifest(yapc.cleanup, base.manifest):
         self.load_cache()
 
         server.register_cleanup(self)
+
+    def get_projects(self):
+        """Get project names
+        
+        @return list of project names
+        """
+        return self.get_dir_names()
 
     def load_cache(self):
         """Load content of cache
