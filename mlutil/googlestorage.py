@@ -133,9 +133,17 @@ class refresh_manifest(yapc.async_task):
     def task(self):
         """Main task
         """
+        count = 0
         self.manifest.clear()
         uri = boto.storage_uri(MLAB_BUCKET, GOOGLE_STORAGE)
         for obj in uri.get_bucket():
             self.manifest.add_file(obj.name)
+            count += 1
+            if ((count % 1000) == 0):
+                output.info("Listed and processed "+str(count)+" files",
+                            self.__class__.__name__)
+            if (self.__to_stop):
+                break
+        output.info("Listed and processed "+str(count)+" files",
+                    self.__class__.__name__)
 
-    
