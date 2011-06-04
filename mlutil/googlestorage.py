@@ -17,13 +17,16 @@ class manager(yapc.component, yapc.cleanup):
     @author ykk
     @date Jun 2011
     """
-    def __init__(self, server):
+    def __init__(self, server, config):
         """Initialize
         
         @param server yapc core
+        @param config config object
         """
         ##Reference to yapc core
         self.server = server
+        ##Reference to manifest
+        self.manifest = manifest(server, config)
         ##Reference to refresh task
         self.__refresh = refresh_manifest()
 
@@ -71,6 +74,34 @@ class manager(yapc.component, yapc.cleanup):
         """
         if (self.__refresh.is_running()):
             self.__refresh.stop()
+
+class manifest(yapc.cleanup):
+    """Google storage manifest
+    
+    @author ykk
+    @date Jun 2011
+    """
+    def __init__(self, server, config):
+        """Initialize
+
+        @param config local cache configuration
+        """
+        ##Reference to configuration
+        self.config = config
+        ##List of files
+        
+        server.register_cleanup(self)
+
+    def save_cache(self):
+        """Save content of cache
+        """
+        fileRef = open(self.config.get_gs_cache(), "w")
+        fileRef.close()
+
+    def cleanup(self):
+        """Cleanup cache
+        """
+        self.save_cache()
 
 class refresh_manifest(yapc.async_task):
     """Async task to list all objects in Google storage

@@ -27,7 +27,7 @@ class mlserver(yapc.daemon):
         jsonconn = jsoncomm.jsonserver(server, file=config.get_sock(),
                                        forcebind=self.forcejson)
         
-        gsmgr = gs.manager(server)
+        gsmgr = gs.manager(server, config)
         
         server.run()
 

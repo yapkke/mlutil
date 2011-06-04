@@ -37,19 +37,26 @@ class config(yapc.cleanup):
         self.config = {}
         if (os.path.exists(self.path)):
             self.read_config()
-        else:
-            self.init_config()
+        self.init_config()
         ##Create path if not exist
         self.check_path()
 
     def init_config(self):
         """Return initial default configuration
         """
-        self.config = {}
-        self.config["path"] = "~/mlutil"
-        self.config["sock"] = "mls.sock"
+        if ("path" not in self.config):
+            self.config["path"] = "~/mlutil"
+        if ("sock" not in self.config):
+            self.config["sock"] = "mls.sock"
+        if ("gs-cache" not in self.config):
+            self.config["gs-cache"] = "gs.cache"
 
         return self.config
+
+    def get_gs_cache(self):
+        """Get cache file for Google storage
+        """
+        return self.get_path()+"/"+self.config["gs-cache"]
 
     def get_sock(self):
         """Get socket
