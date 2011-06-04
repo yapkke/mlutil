@@ -30,7 +30,7 @@ class manager(yapc.component, yapc.cleanup):
         ##Reference to manifest
         self.manifest = manifest(server, config)
         ##Reference to refresh task
-        self.__refresh = refresh_manifest()
+        self.__refresh = refresh_manifest(self.manifest)
 
         server.register_cleanup(self)
         server.register_event_handler(jsoncomm.message.name, self)
@@ -46,7 +46,7 @@ class manager(yapc.component, yapc.cleanup):
             reply["request"] = event.message
             if (event.message["command"] == "refresh-gs"):
                 if (not self.__refresh.is_running()):
-                    self.__refresh = refresh_manifest()
+                    self.__refresh = refresh_manifest(self.manifest)
                     self.__refresh.start()
                     reply["status"] = "started"
                 else:
@@ -91,15 +91,19 @@ class manifest(yapc.cleanup, base.manifest):
         base.manifest.__init__(self)
         ##Reference to configuration
         self.config = config
+        self.load_cache()
 
         server.register_cleanup(self)
 
+    def load_cache(self):
+        """Load content of cache
+        """
+        self.load_file(self.config.get_gs_cache())
         
     def save_cache(self):
         """Save content of cache
         """
-        fileRef = open(self.config.get_gs_cache(), "w")
-        fileRef.close()
+        self.save_file(self.config.get_gs_cache())
 
     def cleanup(self):
         """Cleanup cache
@@ -112,12 +116,14 @@ class refresh_manifest(yapc.async_task):
     @author ykk
     @date Jun 2011
     """
-    def __init__(self):
+    def __init__(self, manifest):
         """Initialize
         """
         yapc.async_task.__init__(self)
         ##Use to indicate is stopping the task is desired
         self.__to_stop = False
+        ##Reference to manifest
+        self.manifest = manifest
 
     def stop(self):
         """Try to stop task
@@ -127,11 +133,9 @@ class refresh_manifest(yapc.async_task):
     def task(self):
         """Main task
         """
+        self.manifest.clear()
         uri = boto.storage_uri(MLAB_BUCKET, GOOGLE_STORAGE)
         for obj in uri.get_bucket():
-            output.dbg(obj.name,
-                       self.__class__.__name__)
-            if (self.__to_stop):
-                break
+            self.manifest.add_file(obj.name)
 
     
