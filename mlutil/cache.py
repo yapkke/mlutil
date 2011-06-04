@@ -23,12 +23,13 @@ class config(yapc.cleanup):
     @author ykk
     @date May 2011
     """
-    def __init__(self, server):
+    def __init__(self, server=None):
         """Initialize
 
         @param server reference to yapc core
         """
-        server.register_cleanup(self)
+        if (server != None):
+            server.register_cleanup(self)
 
         ##Path
         self.path = os.path.expanduser(DEFAULT_LOCAL_CONFIG)

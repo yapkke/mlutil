@@ -8,6 +8,7 @@ import yapc.log.output as output
 import yapc.comm.json as jsoncomm
 
 import mlutil.cache as mlcache
+import mlutil.googlestorage as gs
 
 class mlserver(yapc.daemon):
     """mlab server
@@ -25,8 +26,10 @@ class mlserver(yapc.daemon):
         config = mlcache.config(server)
         jsonconn = jsoncomm.jsonserver(server, file=config.get_sock(),
                                        forcebind=self.forcejson)
-
-        server.run()        
+        
+        gsmgr = gs.manager(server)
+        
+        server.run()
 
 ##Print usage guide
 def usage():

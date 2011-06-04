@@ -1,36 +1,54 @@
 ##Handle all Google storage stuff
 import yapc.interface as yapc
+import yapc.log.output as output
+import yapc.comm.json as jsoncomm
+import time
 
-class file:
-    """Class to describe file in Google storage
+class manager(yapc.component):
+    """Class to manage Google storage
 
     @author ykk
-    @date May 2011
+    @date Jun 2011
     """
-    def __init__(self, name, date=None, experiment=None):
+    def __init__(self, server):
         """Initialize
+        
+        @param server yapc core
         """
-        ##Filename
-        self.name = name
-        ##Date
-        self.date = date
-        ##Experiment
-        self.experiment = experiment
+        self.server = server
+        server.register_event_handler(jsoncomm.message.name, self)
 
-class manifest:
-    """Index or manifest for Google storage
+    def processevent(self, event):
+        """Process event
+
+        @param event event to handle
+        @return True
+        """
+        if (isinstance(event, jsoncomm.message)):
+            refresh = refresh_manifest()
+            refresh.start()
+            output.dbg("Doing other thing", self.__class__.__name__)
+            output.dbg("Doing other thing", self.__class__.__name__)
+            output.dbg("Doing other thing", self.__class__.__name__)
+
+        return True
+
+class refresh_manifest(yapc.async_task):
+    """Async task to list all objects in Google storage
 
     @author ykk
-    @date May 2011
+    @date Jun 2011
     """
     def __init__(self):
         """Initialize
         """
-        ##Dictionary of file description indexed by filename
-        self.files = {}
+        yapc.async_task.__init__(self)
 
-    def refresh(self):
-        """Refresh index
+    def task(self):
+        """Main task
         """
-        pass
+        output.dbg("Running", self.__class__.__name__)
+        time.sleep(10)
+        output.dbg("End", self.__class__.__name__)
 
+    
