@@ -2,7 +2,14 @@
 import yapc.interface as yapc
 import yapc.log.output as output
 import yapc.comm.json as jsoncomm
+
+from oauth2_plugin import oauth2_plugin
+import boto
+
 import time
+
+GOOGLE_STORAGE = 'gs'
+MLAB_BUCKET = 'm-lab'
 
 class manager(yapc.component):
     """Class to manage Google storage
@@ -41,6 +48,17 @@ class manager(yapc.component):
                                     " will not start another",
                                 self.__class__.__name__)
                     reply["status"] = "already running"
+
+            elif (event.message["command"] == "stop-refresh-gs"):
+                output.dbg("Stopping gs refresh",
+                           self.__class__.__name__)
+                if (not self.__refresh.is_running()):
+                    reply["status"] = "not running"
+                else:
+                    self.__refresh.stop()
+                    while (self.__refresh.is_running()):
+                        time.sleep(0.1)
+                    reply["status"] = "stopped"
             
             #Send reply
             event.reply(reply)
@@ -57,12 +75,22 @@ class refresh_manifest(yapc.async_task):
         """Initialize
         """
         yapc.async_task.__init__(self)
+        ##Use to indicate is stopping the task is desired
+        self.__to_stop = False
+
+    def stop(self):
+        """Try to stop task
+        """
+        self.__to_stop = True
 
     def task(self):
         """Main task
         """
-        output.dbg("Running", self.__class__.__name__)
-        time.sleep(10)
-        output.dbg("End", self.__class__.__name__)
+        uri = boto.storage_uri(MLAB_BUCKET, GOOGLE_STORAGE)
+        for obj in uri.get_bucket():
+            output.dbg(obj.name,
+                       self.__class__.__name__)
+            if (self.__to_stop):
+                break
 
     

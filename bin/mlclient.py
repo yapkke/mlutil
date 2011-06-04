@@ -23,9 +23,13 @@ class mlclient(yapc.component):
         self.commands["refresh-gs"] = """refresh-gs
 \tRefresh google storage's manifest
         """
+        self.commands["stop-refresh-gs"] = """stop-refresh-gs
+\tStop refresh of google storage's manifest
+        """
 
     def __del__(self):
-        self.__jclient.__del__()
+        if (self.__jclient != None):
+            self.__jclient.__del__()
 
     def get_sock(self):
         """Get socket to send command to
@@ -60,11 +64,20 @@ class mlclient(yapc.component):
         """
         if (cmd == "refresh-gs"):
             self.refresh_gs()
+        elif (cmd == "stop-refresh-gs"):
+            self.stop_refresh_gs()
     
     def refresh_gs(self):
         """Refresh Google storage index
         """
         self.send({"command":"refresh-gs"})
+        output.info("Received "+self.recv(),
+                    self.__class__.__name__)
+
+    def stop_refresh_gs(self):
+        """Stop refresh of Google storage index
+        """
+        self.send({"command":"stop-refresh-gs"})
         output.info("Received "+self.recv(),
                     self.__class__.__name__)
 
