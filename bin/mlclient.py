@@ -49,6 +49,12 @@ class mlclient(yapc.component):
         sobj = simplejson.dumps(obj)
         self.get_sock().sock.send(sobj)
 
+    def recv(self):
+        """Receive and return pretty
+        """
+        return simplejson.dumps(simplejson.loads(self.__jclient.recv()),
+                                                 indent=4)
+
     def run(self, cmd):
         """Run command
         """
@@ -59,6 +65,8 @@ class mlclient(yapc.component):
         """Refresh Google storage index
         """
         self.send({"command":"refresh-gs"})
+        output.info("Received "+self.recv(),
+                    self.__class__.__name__)
 
 ##Print usage guide
 def usage(mlc):

@@ -22,7 +22,6 @@ class manager(yapc.component):
 
         server.register_event_handler(jsoncomm.message.name, self)
         
-
     def processevent(self, event):
         """Process event
 
@@ -30,15 +29,22 @@ class manager(yapc.component):
         @return True
         """
         if (isinstance(event, jsoncomm.message)):
+            reply = {}
+            reply["request"] = event.message
             if (event.message["command"] == "refresh-gs"):
                 if (not self.__refresh.is_running()):
                     self.__refresh = refresh_manifest()
                     self.__refresh.start()
+                    reply["status"] = "started"
                 else:
                     output.warn("Google storage refresh is in process,"+\
                                     " will not start another",
                                 self.__class__.__name__)
-
+                    reply["status"] = "already running"
+            
+            #Send reply
+            event.reply(reply)
+            
         return True
 
 class refresh_manifest(yapc.async_task):
