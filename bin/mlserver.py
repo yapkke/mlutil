@@ -6,6 +6,7 @@ import yapc.core as core
 import yapc.interface as yapc
 import yapc.log.output as output
 import yapc.comm.json as jsoncomm
+import yapc.util.memcacheutil as mcutil
 
 import mlutil.cache as mlcache
 import mlutil.googlestorage as gs
@@ -20,6 +21,7 @@ class mlserver(yapc.daemon):
         yapc.daemon.__init__(self)
         ##Force bind JSON socket
         self.forcejson = True
+        mcutil.memcache_mode = mcutil.MEMCACHE_MODE["LOCAL"]
 
     def run(self):
         server = core.core()
