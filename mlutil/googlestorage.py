@@ -11,7 +11,6 @@ import boto
 import time
 
 GOOGLE_STORAGE = 'gs'
-MLAB_BUCKET = 'm-lab'
 
 class manager(yapc.component, yapc.cleanup):
     """Class to manage Google storage
@@ -28,7 +27,7 @@ class manager(yapc.component, yapc.cleanup):
         ##Reference to yapc core
         self.server = server
         ##Reference to manifest
-        self.manifest = manifest(server, config)
+        self.manifest = manifest(server, config, "m-lab", "m-lab")
         ##Reference to refresh task
         self.__refresh = refresh_manifest(self.manifest)
 
@@ -86,15 +85,19 @@ class manifest(yapc.cleanup, base.manifest):
     @author ykk
     @date Jun 2011
     """
-    def __init__(self, server, config):
+    def __init__(self, server, config, name, bucket):
         """Initialize
 
+        @param core yapc core
         @param config local cache configuration
+        @param name name of manifest
         """
-        base.manifest.__init__(self)
+        base.manifest.__init__(self, name)
         ##Reference to configuration
         self.config = config
         self.load_cache()
+        ##Bucket
+        self.bucket = bucket
 
         server.register_cleanup(self)
 
@@ -145,7 +148,7 @@ class refresh_manifest(yapc.async_task):
         """
         count = 0
         self.manifest.clear()
-        uri = boto.storage_uri(MLAB_BUCKET, GOOGLE_STORAGE)
+        uri = boto.storage_uri(self.manifest.bucket, GOOGLE_STORAGE)
         for obj in uri.get_bucket():
             self.manifest.add_file(obj.name)
             count += 1
