@@ -27,13 +27,32 @@ class manager(yapc.component, yapc.cleanup):
         ##Reference to yapc core
         self.server = server
         ##Reference to manifest
-        self.manifest = manifest(server, config, "m-lab", "m-lab")
+        self.manifests = {}
         ##Reference to refresh task
-        self.__refresh = refresh_manifest(self.manifest)
-
+        self.__refreshs = {}
+        ##Reference to config
+        self.config = config
+        
         server.register_cleanup(self)
         server.register_event_handler(jsoncomm.message.name, self)
+
+    def add_gs(self, bucket_name, cache_name=None, name=None):
+        """Add gs manifest
         
+        @param bucket_name name of bucket
+        @param cache_name name of cache file (default to <bucket_name>.gscache)
+        @param name name (default to bucket_name)
+        """
+        if (name == None):
+            name = bucket_name
+        if (cache_name == None):
+            cache_name = bucket_name+".gscache"
+
+        self.config.config["gs-caches"][name] = cache_name
+        self.manifests[name]= manifest(self.server, name, bucket_name, 
+                                       self.config.get_full_gs_path(cache_name))
+        self.__refreshs[name]=refresh_manifest(self.manifests[name])
+
     def processevent(self, event):
         """Process event
 
@@ -76,8 +95,9 @@ class manager(yapc.component, yapc.cleanup):
     def cleanup(self):
         """Cleanup process
         """
-        if (self.__refresh.is_running()):
-            self.__refresh.stop()
+        for name,r in self.__refreshs.items():
+            if (r.is_running()):
+                r.stop()
 
 class manifest(yapc.cleanup, base.manifest):
     """Google storage manifest
@@ -85,19 +105,20 @@ class manifest(yapc.cleanup, base.manifest):
     @author ykk
     @date Jun 2011
     """
-    def __init__(self, server, config, name, bucket):
+    def __init__(self, server, name, bucket_name, cache_name):
         """Initialize
 
         @param core yapc core
-        @param config local cache configuration
         @param name name of manifest
+        @param bucket_name name of bucket
+        @param cache_name name of cache
         """
         base.manifest.__init__(self, name)
         ##Reference to configuration
-        self.config = config
+        self.cache_name = cache_name
         self.load_cache()
         ##Bucket
-        self.bucket = bucket
+        self.bucket = bucket_name
 
         server.register_cleanup(self)
 
@@ -111,12 +132,12 @@ class manifest(yapc.cleanup, base.manifest):
     def load_cache(self):
         """Load content of cache
         """
-        self.load_file(self.config.get_gs_cache())
+        self.load_file(self.cache_name)
         
     def save_cache(self):
         """Save content of cache
         """
-        self.save_file(self.config.get_gs_cache())
+        self.save_file(self.cache_name)
 
     def cleanup(self):
         """Cleanup cache

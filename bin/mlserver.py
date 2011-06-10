@@ -30,7 +30,8 @@ class mlserver(yapc.daemon):
                                        forcebind=self.forcejson)
         
         gsmgr = gs.manager(server, config)
-        
+        gsmgr.add_gs("m-lab")
+
         server.run()
 
 ##Print usage guide
