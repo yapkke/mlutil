@@ -28,8 +28,8 @@ class mlclient(yapc.component):
 \tStop refresh of google storage's manifest
         """
 
-        self.commands["list-projects"] = """list-projects
-\tList all projects
+        self.commands["list-gs-manifests"] = """list-gs-manifests
+\tList all manifests in Google storage
         """
 
     def __del__(self):
@@ -63,6 +63,13 @@ class mlclient(yapc.component):
         """
         return simplejson.dumps(simplejson.loads(self.__jclient.recv()),
                                                  indent=4)
+
+    def list_gs(self):
+        """List command
+        """
+        c = {}
+        c["command"] = "list-gs-manifests"
+        self.send(c)
 
     def refresh_gs(self, name):
         """Refresh command
@@ -135,8 +142,9 @@ if (args[0] == "refresh-gs"):
 elif (args[0] == "stop-refresh-gs"):
     output.dbg("Running command "+args[0]+" "+args[1])
     mlc.stop_refresh_gs(args[1])
-else:
-    usage(mlc)
+elif (args[0] == "list-gs-manifests"):
+    output.dbg("Running command "+args[0])
+    mlc.list_gs()
 
 output.info("Received "+mlc.recv(),
             mlc.__class__.__name__)

@@ -91,6 +91,11 @@ class manager(yapc.component, yapc.cleanup):
                     while (self.__refreshs[name].is_running()):
                         time.sleep(0.1)
                     reply["status"] = "stopped"
+
+            elif (event.message["command"] == "list-gs-manifests"):
+                reply["manifests"] = []
+                for name, m in self.manifests.items():
+                    reply["manifests"].append(name)
     
             #Send reply
             event.reply(reply)
