@@ -1,4 +1,4 @@
-##Handle all local cache
+##Handle all local manifest
 import yapc.interface as yapc
 import yapc.log.output as output
 import os
@@ -37,18 +37,18 @@ class config(yapc.cleanup):
             self.config["path"] = "~/mlutil"
         if ("sock" not in self.config):
             self.config["sock"] = "mls.sock"
-        if ("gs-caches" not in self.config):
-            self.config["gs-caches"] = {}
-            self.config["gs-caches"]["m-lab"] = "m-lab.gscache"
+        if ("gs-manifests" not in self.config):
+            self.config["gs-manifests"] = {}
+            self.config["gs-manifests"]["m-lab"] = "m-lab.gsmanifest"
 
         return self.config
 
-    def get_full_gs_path(self, cache_name):
-        """Get cache file for Google storage
+    def get_full_gs_path(self, manifest_name):
+        """Get manifest file for Google storage
 
-        @param cache_name name of cache
+        @param manifest_name name of manifest
         """
-        return self.get_path()+"/"+cache_name
+        return self.get_path()+"/"+manifest_name
 
     def get_sock(self):
         """Get socket

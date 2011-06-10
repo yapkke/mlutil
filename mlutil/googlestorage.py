@@ -36,21 +36,21 @@ class manager(yapc.component, yapc.cleanup):
         server.register_cleanup(self)
         server.register_event_handler(jsoncomm.message.name, self)
 
-    def add_gs(self, bucket_name, cache_name=None, name=None):
+    def add_gs(self, bucket_name, manifest_name=None, name=None):
         """Add gs manifest
         
         @param bucket_name name of bucket
-        @param cache_name name of cache file (default to <bucket_name>.gscache)
+        @param manifest_name name of manifest file (default to <bucket_name>.gsmanifest)
         @param name name (default to bucket_name)
         """
         if (name == None):
             name = bucket_name
-        if (cache_name == None):
-            cache_name = bucket_name+".gscache"
+        if (manifest_name == None):
+            manifest_name = bucket_name+".gsmanifest"
 
-        self.config.config["gs-caches"][name] = cache_name
+        self.config.config["gs-manifests"][name] = manifest_name
         self.manifests[name]= manifest(self.server, name, bucket_name, 
-                                       self.config.get_full_gs_path(cache_name))
+                                       self.config.get_full_gs_path(manifest_name))
         self.__refreshs[name]=refresh_manifest(self.manifests[name])
 
     def processevent(self, event):
@@ -115,18 +115,18 @@ class manifest(yapc.cleanup, base.manifest):
     @author ykk
     @date Jun 2011
     """
-    def __init__(self, server, name, bucket_name, cache_name):
+    def __init__(self, server, name, bucket_name, manifest_name):
         """Initialize
 
         @param core yapc core
         @param name name of manifest
         @param bucket_name name of bucket
-        @param cache_name name of cache
+        @param manifest_name name of manifest
         """
         base.manifest.__init__(self, name)
         ##Reference to configuration
-        self.cache_name = cache_name
-        self.load_cache()
+        self.manifest_name = manifest_name
+        self.load_manifest()
         ##Bucket
         self.bucket = bucket_name
 
@@ -139,20 +139,20 @@ class manifest(yapc.cleanup, base.manifest):
         """
         return self.get_dir_names()
 
-    def load_cache(self):
-        """Load content of cache
+    def load_manifest(self):
+        """Load content of manifest
         """
-        self.load_file(self.cache_name)
+        self.load_file(self.manifest_name)
         
-    def save_cache(self):
-        """Save content of cache
+    def save_manifest(self):
+        """Save content of manifest
         """
-        self.save_file(self.cache_name)
+        self.save_file(self.manifest_name)
 
     def cleanup(self):
-        """Cleanup cache
+        """Cleanup manifest
         """
-        self.save_cache()
+        self.save_manifest()
 
 class refresh_manifest(yapc.async_task):
     """Async task to list all objects in Google storage
