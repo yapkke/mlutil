@@ -20,10 +20,11 @@ class mlclient(yapc.component):
         self.sock = None
         self.__jclient = None
         self.commands = {}
-        self.commands["refresh-gs"] = """refresh-gs
+        self.commands["refresh-gs"] = """refresh-gs [name]
 \tRefresh google storage's manifest
         """
-        self.commands["stop-refresh-gs"] = """stop-refresh-gs
+
+        self.commands["stop-refresh-gs"] = """stop-refresh-gs [name]
 \tStop refresh of google storage's manifest
         """
 
@@ -63,20 +64,21 @@ class mlclient(yapc.component):
         return simplejson.dumps(simplejson.loads(self.__jclient.recv()),
                                                  indent=4)
 
-    def run(self, cmd):
-        """Run command
+    def refresh_gs(self, name):
+        """Refresh command
         """
-        if ((cmd == "refresh-gs") or
-            (cmd == "stop-refresh-gs") or
-            (cmd == "list-projects")):
-            self.send_simple_cmd(cmd)
+        c = {}
+        c["command"] = "refresh-gs"
+        c["name"] = name
+        self.send(c)
 
-    def send_simple_cmd(self, cmd):
-        """Send simple command to mlserver
+    def stop_refresh_gs(self, name):
+        """Stop-Refresh command
         """
-        self.send({"command":cmd})
-        output.info("Received "+self.recv(),
-                    self.__class__.__name__)
+        c = {}
+        c["command"] = "stop-refresh-gs"
+        c["name"] = name
+        self.send(c)
 
 ##Print usage guide
 def usage(mlc):
@@ -119,9 +121,22 @@ for opt,arg in opts:
         print "Unhandled option :"+opt
         sys.exit(2)
 
-if (len(args) > 0 and
-    args[0] in mlc.commands):
-    output.dbg("Running command "+args[0])
-    mlc.run(args[0])
+if (len(args) == 0):
+    output.err("No command found!", "mlclient")
+    sys.exit(2)
+
+if (args[0] not in mlc.commands):
+    output.err("Unknown command!", "mlclient")
+    sys.exit(2)
+
+if (args[0] == "refresh-gs"):
+    output.dbg("Running command "+args[0]+" "+args[1])
+    mlc.refresh_gs(args[1])
+elif (args[0] == "stop-refresh-gs"):
+    output.dbg("Running command "+args[0]+" "+args[1])
+    mlc.stop_refresh_gs(args[1])
 else:
     usage(mlc)
+
+output.info("Received "+mlc.recv(),
+            mlc.__class__.__name__)

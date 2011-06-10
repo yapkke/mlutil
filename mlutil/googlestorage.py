@@ -63,9 +63,13 @@ class manager(yapc.component, yapc.cleanup):
             reply = {}
             reply["request"] = event.message
             if (event.message["command"] == "refresh-gs"):
-                if (not self.__refresh.is_running()):
-                    self.__refresh = refresh_manifest(self.manifest)
-                    self.__refresh.start()
+                name = event.message["name"]
+                reply["name"] = name
+                if (name not in self.__refreshs):
+                    reply["error"] = "No such manifest"
+                elif (not self.__refreshs[name].is_running()):
+                    self.__refreshs[name] = refresh_manifest(self.manifests[name])
+                    self.__refreshs[name].start()
                     reply["status"] = "started"
                 else:
                     output.warn("Google storage refresh is in process,"+\
@@ -74,18 +78,19 @@ class manager(yapc.component, yapc.cleanup):
                     reply["status"] = "already running"
 
             elif (event.message["command"] == "stop-refresh-gs"):
-                output.dbg("Stopping gs refresh",
+                name = event.message["name"]
+                reply["name"] = name
+                output.dbg("Stopping gs refresh of "+name,
                            self.__class__.__name__)
-                if (not self.__refresh.is_running()):
+                if (name not in self.__refreshs):
+                    reply["error"] = "No such manifest"
+                elif (not self.__refreshs[name].is_running()):
                     reply["status"] = "not running"
                 else:
-                    self.__refresh.stop()
-                    while (self.__refresh.is_running()):
+                    self.__refreshs[name].stop()
+                    while (self.__refreshs[name].is_running()):
                         time.sleep(0.1)
                     reply["status"] = "stopped"
-        
-            elif (event.message["command"] == "list-projects"):
-                reply["projects"] = self.manifest.get_projects()
     
             #Send reply
             event.reply(reply)
@@ -180,4 +185,3 @@ class refresh_manifest(yapc.async_task):
                 break
         output.info("Listed and processed "+str(count)+" files",
                     self.__class__.__name__)
-
